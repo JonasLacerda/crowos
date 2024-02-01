@@ -9,6 +9,8 @@ tela é de 240px * 135px ST7789
 
 #define tela M5Cardputer.Display
 
+M5Canvas dataConfig(&M5Cardputer.Display);
+
 Bateria bateriaLevel;
 Tempo tempo;
 
@@ -18,6 +20,9 @@ const unsigned long updateInterval = 1000;
 
 int brilho[] = {50, 65, 80, 100};
 int b = 1;
+
+//escrever numero
+int dataC;
 
 int menuSelecionado = 0;
 int menuSelectConfig = 0;
@@ -136,7 +141,12 @@ void menuConfig(){
         tela.print(tempo.getMinutes());
         break;
       case 1:
-        tela.println("Data:   01/02/2024");
+        tela.println("Data:   ");
+        tela.println("01");
+        tela.println("/");
+        tela.println("02");
+        tela.println("/");
+        tela.println("24");
         break;
       case 2:
         tela.print("Brilho(0-3):   ");
@@ -181,15 +191,31 @@ void loop() {
 
   if(M5Cardputer.Keyboard.isKeyPressed(KEY_ENTER)){
     switch (menuSelecionado) {
+      case 2 :
+        //appTeclado();
+        break;
       case 3 :
-        menuConfig();
-        indexTela = 1;
+        if(indexTela != 1){
+          menuConfig();
+          indexTela = 1;
+        }
         break;
     }
   }
 
   if(M5Cardputer.Keyboard.isKeyPressed(KEY_BACKSPACE)){
-    if(menuSelecionado == 3){
+    switch (menuSelecionado) {
+      case 3 :
+        if(indexTela != 0){
+          indexTela = 0;
+          menuStart();
+        }
+        break;
+    }
+  }
+
+  if(M5Cardputer.BtnA.wasPressed()){
+    if(indexTela != 0){
       indexTela = 0;
       menuStart();
     }
@@ -203,7 +229,7 @@ void loop() {
       }
 
       if (M5Cardputer.Keyboard.isKeyPressed('.')) {
-        M5Cardputer.Speaker.tone(4000,50);
+        //M5Cardputer.Speaker.tone(4000,50);
         switch (indexTela) {
           case 0:
             menuSelecionado++;
@@ -224,7 +250,7 @@ void loop() {
       }
 
       if (M5Cardputer.Keyboard.isKeyPressed(';')) {
-        M5Cardputer.Speaker.tone(4000,50);
+        //M5Cardputer.Speaker.tone(4000,50);
         switch (indexTela) {
           case 0:
             menuSelecionado--;
@@ -244,14 +270,20 @@ void loop() {
       }
 
       if (M5Cardputer.Keyboard.isKeyPressed('/')) {
-        M5Cardputer.Speaker.tone(4000,50);
-        if (menuSelectConfig == 2) {
+        //M5Cardputer.Speaker.tone(4000,50);
+        switch (menuSelectConfig) {
+          case 1 :
+            tela.fillRect(95, 50, 103, 16, TFT_DARKCYAN);
+            break;
+
+          case 2 :
             b++;
             if(b > 3){
               b = 0;
             }
             menuConfig();
             tela.setBrightness(brilho[b]);
+            break;
         }
       }
 
@@ -266,12 +298,18 @@ void loop() {
             tela.setBrightness(brilho[b]);
         }
       }
-
-
     }
   }
-
 }
+
+
+
+
+
+
+
+
+
 
 
 
