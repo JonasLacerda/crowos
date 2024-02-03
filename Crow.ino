@@ -4,6 +4,7 @@ tela é de 240px * 135px ST7789
 
 */
 #include "M5Cardputer.h"
+#include "M5GFX.h"
 #include "bateria.h"
 #include "tempo.h"
 
@@ -18,8 +19,8 @@ unsigned long tempoInicio;
 const unsigned long duracaoDelay = 2000;
 const unsigned long updateInterval = 1000;
 
-int brilho[] = {50, 65, 80, 100};
-int b = 1;
+int brilho[] = {0, 50, 65, 80, 100};
+int b = 2;
 
 //escrever numero
 int dataC;
@@ -30,7 +31,9 @@ int menuSelectConfig = 0;
 String tituloNome;
 unsigned long tempoUltimaAtualizacao = 0;
 
-//indexTela = [menuStart(), menuConfig()]
+String texto;
+
+//indexTela = [menuStart(), menuConfig(), appTeclado()]
 int indexTela = 0;
 
 // Função para exibir o título
@@ -159,9 +162,20 @@ void menuConfig(){
   }
 }
 
+void appTeclado(){
+  if(indexTela !=2){
+    indexTela = 2;
+  }
+  tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
+  tela.setCursor(15, 50);
+  tela.setTextScroll(true);
+  tela.println(texto);
+}
+
 void setup() {
   auto cfg = M5.config();
   M5Cardputer.begin(cfg, true);
+  Serial.begin(115200);
 
   tela.setBrightness(50);
   tela.setRotation(1);
@@ -192,7 +206,9 @@ void loop() {
   if(M5Cardputer.Keyboard.isKeyPressed(KEY_ENTER)){
     switch (menuSelecionado) {
       case 2 :
-        //appTeclado();
+        if(indexTela != 2){
+          appTeclado();
+        }
         break;
       case 3 :
         if(indexTela != 1){
@@ -223,6 +239,30 @@ void loop() {
 
   if (M5Cardputer.Keyboard.isChange()){
     if (M5Cardputer.Keyboard.isPressed()) {
+      Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
+
+      for (auto i : status.word) {
+        texto += i;
+        Serial.println(texto);
+        if(indexTela == 2){
+          appTeclado();
+        }
+      }
+
+      if (status.del) {
+          texto.remove(texto.length() - 1);
+          Serial.println(texto);
+          if(indexTela == 2){
+            appTeclado();
+          }
+      }
+
+      if (status.enter) {
+          texto.remove(0, 2);
+          texto = "";
+      }
+
+
       if (M5Cardputer.Keyboard.isKeyPressed('b')) {
         M5Cardputer.Speaker.tone(4000,50);
         brilhoTela();
