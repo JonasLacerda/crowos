@@ -147,11 +147,11 @@ void menuConfig(){
         tela.print(tempo.getMinutes());
         break;
       case 1:
-        tela.println("Data:   ");
-        tela.println("01");
-        tela.println("/");
-        tela.println("02");
-        tela.println("/");
+        tela.print("Data:   ");
+        tela.print("01");
+        tela.print("/");
+        tela.print("02");
+        tela.print("/");
         tela.println("24");
         break;
       case 2:
@@ -346,7 +346,7 @@ void loop() {
 
           case 2 :
             b++;
-            if(b > 3){
+            if(b > 4){
               b = 0;
             }
             menuConfig();
@@ -356,14 +356,20 @@ void loop() {
       }
 
       if (M5Cardputer.Keyboard.isKeyPressed(',')) {
-        M5Cardputer.Speaker.tone(4000,50);
-        if (menuSelectConfig == 2) {
+        //M5Cardputer.Speaker.tone(4000,50);
+        switch (menuSelectConfig) {
+          case 1 :
+            tela.fillRect(95, 50, 103, 16, TFT_DARKCYAN);
+            break;
+
+          case 2 :
             b--;
             if(b < 0){
-              b = 0;
+              b = 4;
             }
             menuConfig();
             tela.setBrightness(brilho[b]);
+            break;
         }
       }
     }
