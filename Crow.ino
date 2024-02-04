@@ -86,7 +86,7 @@ void hourTile() {
 void brilhoTela(){
   tela.setBrightness(brilho[b]);
   b++;
-  if(b > 3){
+  if(b > 4){
     b = 0;
   }
 }
