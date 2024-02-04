@@ -4,9 +4,12 @@ tela é de 240px * 135px ST7789
 
 */
 #include "M5Cardputer.h"
-#include "M5GFX.h"
 #include "bateria.h"
 #include "tempo.h"
+
+#include "USB.h"
+#include "USBHIDKeyboard.h"
+USBHIDKeyboard Keyboard;
 
 #define tela M5Cardputer.Display
 
@@ -165,6 +168,9 @@ void menuConfig(){
 void appTeclado(){
   if(indexTela !=2){
     indexTela = 2;
+  }else {
+    Keyboard.begin();
+    USB.begin();
   }
   tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
   tela.setCursor(15, 50);
@@ -186,6 +192,8 @@ void setup() {
   // Retângulo de título
   titulo("Home");
   menuStart();
+
+
 }
 
 void loop() {
@@ -241,31 +249,51 @@ void loop() {
     if (M5Cardputer.Keyboard.isPressed()) {
       Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
 
-      for (auto i : status.word) {
-        texto += i;
-        Serial.println(texto);
-        if(indexTela == 2){
-          appTeclado();
+      if (indexTela == 2){
+        //envio do que digitar por usb
+        KeyReport report = {0};
+        report.modifiers = status.modifiers;
+        uint8_t index    = 0;
+        for (auto i : status.hid_keys) {
+            report.keys[index] = i;
+            index++;
+            if (index > 5) {
+                index = 5;
+            }
         }
-      }
 
-      if (status.del) {
-          texto.remove(texto.length() - 1);
+        Keyboard.sendReport(&report);
+        Keyboard.releaseAll();
+
+        for (auto i : status.word) {
+          texto += i;
           Serial.println(texto);
           if(indexTela == 2){
             appTeclado();
           }
+        }
+
+        if (status.del) {
+            texto.remove(texto.length() - 1);
+            Serial.println(texto);
+            if(indexTela == 2){
+              appTeclado();
+            }
+        }
+
+        if (status.enter) {
+            texto.remove(0, 2);
+            texto = "";
+            appTeclado();
+        }
+
+        //fim do codigo pra enviar por usb
       }
-
-      if (status.enter) {
-          texto.remove(0, 2);
-          texto = "";
-      }
-
-
-      if (M5Cardputer.Keyboard.isKeyPressed('b')) {
-        M5Cardputer.Speaker.tone(4000,50);
-        brilhoTela();
+      if (M5Cardputer.Keyboard.isKeyPressed(KEY_OPT)){
+        if (M5Cardputer.Keyboard.isKeyPressed('b')) {
+          M5Cardputer.Speaker.tone(4000,50);
+          brilhoTela();
+        }
       }
 
       if (M5Cardputer.Keyboard.isKeyPressed('.')) {
