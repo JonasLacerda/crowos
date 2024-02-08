@@ -486,9 +486,10 @@ void loop() {
       }
     }
 
-    if (M5Cardputer.Keyboard.isPressed()) {
+    if(indexTela == 3){
+      if (M5Cardputer.Keyboard.isPressed()) {
       Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
-      switch (indexTela){
+      switch (menuSelecionado){
         case 0 :
           for (auto key : status.word) {
             if (indexTela == 3) {
@@ -509,17 +510,20 @@ void loop() {
           }
           break;
       } 
-    }else {
-      switch (indexTela){
-        case 0 :
-          // Desativa todos os botões
-          for (int j = 0; j < 15; ++j) {
-              btnIr[j].press(false);
-              btnIr[j].drawButton(false);
-          }
-          break;   
+      }else {
+        switch (menuSelecionado){
+          case 0 :
+            // Desativa todos os botões
+            for (int j = 0; j < 15; ++j) {
+                btnIr[j].press(false);
+                btnIr[j].drawButton(false);
+            }
+            break;   
+        }
       }
+
     }
+    
     delay(30);
   }
 }
