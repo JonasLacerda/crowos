@@ -7,7 +7,9 @@ Os apps que estou desenvolvendo (tentando fazer funcionar):
   - [x] Parcialmente feito, está funcional, mas precisa reiniciar o Carputer para voltar à serial. Só usa o teclado para inserir no dispositivo se estiver com o app de teclado na tela.
   - [x] Melhorei o atalho do brilho, utilizando opt + b para mudar o brilho. Se o app de teclado estiver aberto, ele tecla 'b'... vou corrigir isso quando me perturbar.
 - IR
-  - [ ] Em desenvolvimento. Minha TV é TCL e não encontrei os comandos dela. Isso me implica em montar um Arduino para capturar os inputs do controle IR e depois programar para o Carputer.
+  - [x] Em desenvolvimento. Minha TV é TCL e não encontrei os comandos dela. Isso me implica em montar um Arduino para capturar os inputs do controle IR e depois programar para o Carputer.
+  - [ ] custoimizar os controles.
+  - [ ] ter opção de configuracao do led ir
 - Tempo
   - [x] Parcialmente feito. Criei as funções para definir o tempo correto, e o tempo corre bem favorável. Existe uma diferença de segundos que será corrigida com wifi no futuro.
   - [ ] Quero adicionar no app Tempo a técnica Pomodoro.
