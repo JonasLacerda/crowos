@@ -4,6 +4,9 @@ tela é de 240px * 135px ST7789
 
 */
 #include "M5Cardputer.h"
+#include <IRremote.hpp>
+#include <M5GFX.h>
+
 #include "bateria.h"
 #include "tempo.h"
 
@@ -13,7 +16,13 @@ USBHIDKeyboard Keyboard;
 
 #define tela M5Cardputer.Display
 
+#define DISABLE_CODE_FOR_RECEIVER
+#define IR_TX_PIN 44
+
 M5Canvas dataConfig(&M5Cardputer.Display);
+
+//13
+LGFX_Button btnIr[15];
 
 Bateria bateriaLevel;
 Tempo tempo;
@@ -36,12 +45,12 @@ unsigned long tempoUltimaAtualizacao = 0;
 
 String texto;
 
-//indexTela = [menuStart(), menuConfig(), appTeclado()]
+//indexTela = [menuStart(), menuConfig(), appTeclado(), appIR()]
 int indexTela = 0;
 
-// Função para exibir o título
+// Função para exibir o título 8 caracter
 void titulo(String nome) {
-  tituloNome = nome;
+  tituloNome = nome.substring(0, 8);
   tela.fillRect(0, 0, tela.width(), 26, TFT_DARKGREEN);
   tela.setCursor(15, 5);
   tela.setTextColor(WHITE);
@@ -93,6 +102,7 @@ void brilhoTela(){
 
 void menuStart() {
   tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
+  titulo("Home");
 
   for (int i = 0; i < 4; i++) {
     int yPosition = 30 + i * 20;
@@ -125,6 +135,8 @@ void menuStart() {
 
 void menuConfig(){
   tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
+  titulo("Config");
+
   for (int i = 0; i < 4; i++) {
     int yPosition = 30 + i * 20;
 
@@ -173,9 +185,102 @@ void appTeclado(){
     USB.begin();
   }
   tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
+  titulo("Teclado");
   tela.setCursor(15, 50);
   tela.setTextScroll(true);
   tela.println(texto);
+}
+
+void appIR() {
+    IrSender.begin(DISABLE_LED_FEEDBACK);  // Start with IR_SEND_PIN as send pin
+    IrSender.setSendPin(IR_TX_PIN);
+
+    tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
+    titulo("IR");
+    tela.setCursor(15, 50);
+    tela.setTextScroll(true);
+    tela.drawString("TCL", 15, 35);
+    tela.setTextColor(TFT_SILVER, TFT_BLACK);
+    int numLinhas = 3;
+    int numColunas = 5;
+    int larguraBotao = 30;
+    int alturaBotao = 25;
+    int espacamentoHorizontal = 5;
+    int espacamentoVertical = 5;
+
+    // Nomes dos botões
+    String nomesBotoes[15] = {
+        "P", "^", "H", "ch+", "vol+",
+        "<", "ok", ">", "ch-", "vol-",
+        "conf", "", "esc", "...", "ent"
+    };
+
+    // Inicialize e desenhe os botões
+    for (int i = 0; i < 15; ++i) {
+        int linha = i / numColunas;
+        int coluna = i % numColunas;
+        int x = espacamentoHorizontal + coluna * (larguraBotao + espacamentoHorizontal) + 75;
+        int y = 50 + linha * (alturaBotao + espacamentoVertical);
+
+        btnIr[i].initButton(&M5.Lcd, x, y, larguraBotao, alturaBotao, TFT_DARKGREEN, TFT_YELLOW, TFT_DARKGREEN, nomesBotoes[i].c_str());
+        btnIr[i].drawButton();
+    }
+}
+
+void sendIRSignal(char letter) {
+    // Configurações específicas de sinal IR para cada letra usando switch case
+    switch (letter) {
+        case 'p':
+          IrSender.sendPulseDistanceWidth(38, 4050, 3950, 550, 2000, 550, 1000, 0xAB054F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+          break;
+        case ';':
+          IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0x6509AF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+          break;
+        case 'h':
+          IrSender.sendPulseDistanceWidth(38, 4100, 3950, 550, 2000, 550, 1000, 0xEF010F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+          break;
+        case '\'':
+            // Adicione configurações para o caractere "'" conforme necessário
+            break;
+        case 'd':
+            IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0x4B0B4F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+            break;
+        case 'f':
+          IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0xB0F4F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+          break;
+        case ',':
+            IrSender.sendPulseDistanceWidth(38, 4100, 3950, 550, 2000, 550, 1000, 0x9506AF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+            break;
+        case 'l':
+            
+            break;
+        case '/':
+            IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0x150EAF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+            break;
+        case 'x':
+          IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0xCB034F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+          break;
+        case 'c':
+            IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0x8B074F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+            break;
+        case '1':
+            // Adicione configurações para o caractere "1" conforme necessário
+            break;
+        case '.':
+            IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0xE501AF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+            break;
+        case '`':
+            IrSender.sendPulseDistanceWidth(38, 4100, 3950, 550, 2000, 550, 1000, 0x1B0E4F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+            break;
+        case 'i':
+            // Adicione configurações para o caractere "i" conforme necessário
+            break;
+        case 'o':
+            IrSender.sendPulseDistanceWidth(38, 4100, 3950, 550, 2000, 550, 1000, 0x3A0C5F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+            break;
+        default:
+            break;
+    }
 }
 
 void setup() {
@@ -188,12 +293,7 @@ void setup() {
 
   // Cobre a tela toda
   tela.fillScreen(TFT_DARKCYAN);
-
-  // Retângulo de título
-  titulo("Home");
   menuStart();
-
-
 }
 
 void loop() {
@@ -213,6 +313,17 @@ void loop() {
 
   if(M5Cardputer.Keyboard.isKeyPressed(KEY_ENTER)){
     switch (menuSelecionado) {
+      case 0 :
+        if(indexTela != 3){
+          indexTela = 3;
+          appIR();
+          delay(60);
+        }else{
+          IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0xD002FF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
+          btnIr[6].press(true);
+          btnIr[6].drawButton(true);
+        }
+        break;
       case 2 :
         if(indexTela != 2){
           appTeclado();
@@ -289,6 +400,7 @@ void loop() {
 
         //fim do codigo pra enviar por usb
       }
+
       if (M5Cardputer.Keyboard.isKeyPressed(KEY_OPT)){
         if (M5Cardputer.Keyboard.isKeyPressed('b')) {
           M5Cardputer.Speaker.tone(4000,50);
@@ -373,9 +485,46 @@ void loop() {
         }
       }
     }
+
+    if (M5Cardputer.Keyboard.isPressed()) {
+      Keyboard_Class::KeysState status = M5Cardputer.Keyboard.keysState();
+      switch (indexTela){
+        case 0 :
+          for (auto key : status.word) {
+            if (indexTela == 3) {
+                Serial.println(key);
+                // Mapeamento de letras para índices de botões
+                String letters[] = {"p", ";", "h", "d", "f",
+                                    ",", "", "/", "x", "c",
+                                    "1", ".", "`", "i", "o"};
+                for (int j = 0; j < 15; ++j) {
+                    // Convertendo char para String antes de comparar
+                    if (String(key) == letters[j]) { 
+                        btnIr[j].press(true);
+                        btnIr[j].drawButton(true);
+                        sendIRSignal(key);
+                    }
+                }
+            }
+          }
+          break;
+      } 
+    }else {
+      switch (indexTela){
+        case 0 :
+          // Desativa todos os botões
+          for (int j = 0; j < 15; ++j) {
+              btnIr[j].press(false);
+              btnIr[j].drawButton(false);
+          }
+          break;   
+      }
+    }
     delay(30);
   }
 }
+
+
 
 
 
