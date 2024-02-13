@@ -17,3 +17,7 @@ Os apps que estou desenvolvendo (tentando fazer funcionar):
   - [ ] Mesmo que eu não tenha paciência para fazer, quero criar um alarme e adicionar uma função de start para que execute um determinado programa em um determinado horário.
 
 Feito isso, vou programar a parte de Wi-Fi e Bluetooth. Só após isso vou iniciar os estudos para adaptar os módulos. Até o momento, o código compilado está usando 20% da memória do ESP32S3.
+
+nota:
+  esptool.py --chip esp32s3 merge_bin --output Crow.bin 0x0000 crow.ino.bootloader.bin 0x8000 Crow.ino.partitions.bin 0x10000 Crow.ino.bin
+  esptool.py --port /dev/ttyACM0 write_flash 0x0 Crow.bin
