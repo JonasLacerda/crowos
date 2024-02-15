@@ -3,9 +3,13 @@ bateria sao duas 120mAh + 1400mAh pino da bateria é G10 e tem uma correção de
 tela é de 240px * 135px ST7789
 
 */
+
+//#include "PT_BR.h"
+#include "EN_US.h"
 #include "M5Cardputer.h"
 #include <IRremote.hpp>
 #include <M5GFX.h>
+
 
 #include "bateria.h"
 #include "tempo.h"
@@ -118,16 +122,16 @@ void menuStart() {
 
     switch (i) {
       case 0:
-        tela.println("Controle IR");
+        tela.println(menu_IR);
         break;
       case 1:
-        tela.println("Tempo");
+        tela.println(menu_tempo);
         break;
       case 2:
-        tela.println("Teclado");
+        tela.println(menu_teclado);
         break;
       case 3:
-        tela.println("Configuracao");
+        tela.println(menu_configuracao);
         break;
     }
   }
@@ -151,7 +155,7 @@ void menuConfig(){
 
     switch (i) {
       case 0:
-        tela.print("Hora:   ");
+        tela.print(tempo_hora ":   ");
         tela.print((tempo.getHours() < 10) ? "0" : "");
         tela.print(tempo.getHours());
         tela.print(":");
@@ -159,7 +163,7 @@ void menuConfig(){
         tela.print(tempo.getMinutes());
         break;
       case 1:
-        tela.print("Data:   ");
+        tela.print(tempo_data ":   ");
         tela.print("01");
         tela.print("/");
         tela.print("02");
@@ -167,11 +171,11 @@ void menuConfig(){
         tela.println("24");
         break;
       case 2:
-        tela.print("Brilho(0-3):   ");
+        tela.print(tempo_brilho "(0-3):   ");
         tela.println(b+1);
         break;
       case 3:
-        tela.println("Tema: padrao");
+        tela.println(config_tema ": " config_tema_padrao );
         break;
     }
   }
@@ -185,7 +189,7 @@ void appTeclado(){
     USB.begin();
   }
   tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
-  titulo("Teclado");
+  titulo(menu_teclado);
   tela.setCursor(15, 50);
   tela.setTextScroll(true);
   tela.println(texto);
