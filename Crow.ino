@@ -4,8 +4,8 @@ tela é de 240px * 135px ST7789
 
 */
 
-//#include "PT_BR.h"
-#include "EN_US.h"
+#include "PT_BR.h"
+//#include "EN_US.h"
 #include "M5Cardputer.h"
 #include <IRremote.hpp>
 #include <M5GFX.h>
