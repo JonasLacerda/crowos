@@ -3,6 +3,7 @@ bateria sao duas 120mAh + 1400mAh pino da bateria é G10 e tem uma correção de
 tela é de 240px * 135px ST7789
 
 */
+#include <map>
 #include "M5Cardputer.h"
 #include <IRremote.hpp>
 #include <M5GFX.h>
@@ -47,6 +48,30 @@ String texto;
 
 //indexTela = [menuStart(), menuConfig(), appTeclado(), appIR()]
 int indexTela = 0;
+
+int frequencia = 38;
+int pulso_marcacao = 4050;
+int intervalo_marcacao = 3950;
+int pulso_espaco = 550;
+int intervalo_espaco = 2000;
+int pulso_inicio = 550;
+int intervalo_inicio = 1000;
+
+std::map<char, unsigned long> irCodes = {
+    {'p', 0xAB054F},
+    {';', 0x6509AF},
+    {'h', 0xEF010F},
+    {'d', 0x4B0B4F},
+    {'f', 0xB0F4F},
+    {',', 0x9506AF},
+    {'/', 0x150EAF},
+    {'x', 0xCB034F},
+    {'c', 0x8B074F},
+    {'.', 0xE501AF},
+    {'`', 0x1B0E4F},
+    {'o', 0x3A0C5F}
+};
+
 
 // Função para exibir o título 8 caracter
 void titulo(String nome) {
@@ -101,8 +126,10 @@ void brilhoTela(){
 }
 
 void menuStart() {
-  tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
   titulo("Home");
+  bateriaM5();
+  hourTile();
+  tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
 
   for (int i = 0; i < 4; i++) {
     int yPosition = 30 + i * 20;
@@ -136,6 +163,8 @@ void menuStart() {
 void menuConfig(){
   tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
   titulo("Config");
+  bateriaM5();
+  hourTile();
 
   for (int i = 0; i < 4; i++) {
     int yPosition = 30 + i * 20;
@@ -186,100 +215,63 @@ void appTeclado(){
   }
   tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
   titulo("Teclado");
+  bateriaM5();
+  hourTile();
   tela.setCursor(15, 50);
   tela.setTextScroll(true);
   tela.println(texto);
 }
 
 void appIR() {
-    IrSender.begin(DISABLE_LED_FEEDBACK);  // Start with IR_SEND_PIN as send pin
-    IrSender.setSendPin(IR_TX_PIN);
+  IrSender.begin(DISABLE_LED_FEEDBACK);  // Start with IR_SEND_PIN as send pin
+  IrSender.setSendPin(IR_TX_PIN);
 
-    tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
-    titulo("IR");
-    tela.setCursor(15, 50);
-    tela.setTextScroll(true);
-    tela.drawString("TCL", 15, 35);
-    tela.setTextColor(TFT_SILVER, TFT_BLACK);
-    int numLinhas = 3;
-    int numColunas = 5;
-    int larguraBotao = 30;
-    int alturaBotao = 25;
-    int espacamentoHorizontal = 5;
-    int espacamentoVertical = 5;
+  tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
+  titulo("IR");
+  bateriaM5();
+  hourTile();
+  tela.setCursor(15, 50);
+  tela.setTextScroll(true);
+  tela.drawString("TCL", 15, 35);
+  tela.setTextColor(TFT_SILVER, TFT_BLACK);
+  int numLinhas = 3;
+  int numColunas = 5;
+  int larguraBotao = 30;
+  int alturaBotao = 25;
+  int espacamentoHorizontal = 5;
+  int espacamentoVertical = 5;
 
-    // Nomes dos botões
-    String nomesBotoes[15] = {
-        "P", "^", "H", "ch+", "vol+",
-        "<", "ok", ">", "ch-", "vol-",
-        "conf", "", "esc", "...", "ent"
-    };
+  // Nomes dos botões
+  String nomesBotoes[15] = {
+    "P", "^", "H", "ch+", "vol+",
+    "<", "ok", ">", "ch-", "vol-",
+    "conf", "", "esc", "...", "ent"
+  };
 
-    // Inicialize e desenhe os botões
-    for (int i = 0; i < 15; ++i) {
-        int linha = i / numColunas;
-        int coluna = i % numColunas;
-        int x = espacamentoHorizontal + coluna * (larguraBotao + espacamentoHorizontal) + 75;
-        int y = 50 + linha * (alturaBotao + espacamentoVertical);
+  // Inicialize e desenhe os botões
+  for (int i = 0; i < 15; ++i) {
+    int linha = i / numColunas;
+    int coluna = i % numColunas;
+    int x = espacamentoHorizontal + coluna * (larguraBotao + espacamentoHorizontal) + 75;
+    int y = 50 + linha * (alturaBotao + espacamentoVertical);
 
-        btnIr[i].initButton(&M5.Lcd, x, y, larguraBotao, alturaBotao, TFT_DARKGREEN, TFT_YELLOW, TFT_DARKGREEN, nomesBotoes[i].c_str());
-        btnIr[i].drawButton();
-    }
+    btnIr[i].initButton(&M5.Lcd, x, y, larguraBotao, alturaBotao, TFT_DARKGREEN, TFT_YELLOW, TFT_DARKGREEN, nomesBotoes[i].c_str());
+    btnIr[i].drawButton();
+  }
+}
+
+
+void lsb_first(unsigned long cod, int tt){
+  IrSender.sendPulseDistanceWidth(frequencia, pulso_marcacao, intervalo_marcacao, pulso_espaco, intervalo_espaco, pulso_inicio, intervalo_inicio, cod, tt, PROTOCOL_IS_LSB_FIRST, 0, 0);
 }
 
 void sendIRSignal(char letter) {
-    // Configurações específicas de sinal IR para cada letra usando switch case
-    switch (letter) {
-        case 'p':
-          IrSender.sendPulseDistanceWidth(38, 4050, 3950, 550, 2000, 550, 1000, 0xAB054F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-          break;
-        case ';':
-          IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0x6509AF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-          break;
-        case 'h':
-          IrSender.sendPulseDistanceWidth(38, 4100, 3950, 550, 2000, 550, 1000, 0xEF010F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-          break;
-        case '\'':
-            // Adicione configurações para o caractere "'" conforme necessário
-            break;
-        case 'd':
-            IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0x4B0B4F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-            break;
-        case 'f':
-          IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0xB0F4F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-          break;
-        case ',':
-            IrSender.sendPulseDistanceWidth(38, 4100, 3950, 550, 2000, 550, 1000, 0x9506AF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-            break;
-        case 'l':
-            
-            break;
-        case '/':
-            IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0x150EAF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-            break;
-        case 'x':
-          IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0xCB034F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-          break;
-        case 'c':
-            IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0x8B074F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-            break;
-        case '1':
-            // Adicione configurações para o caractere "1" conforme necessário
-            break;
-        case '.':
-            IrSender.sendPulseDistanceWidth(38, 4050, 4000, 550, 2000, 550, 1000, 0xE501AF, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-            break;
-        case '`':
-            IrSender.sendPulseDistanceWidth(38, 4100, 3950, 550, 2000, 550, 1000, 0x1B0E4F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-            break;
-        case 'i':
-            // Adicione configurações para o caractere "i" conforme necessário
-            break;
-        case 'o':
-            IrSender.sendPulseDistanceWidth(38, 4100, 3950, 550, 2000, 550, 1000, 0x3A0C5F, 24, PROTOCOL_IS_LSB_FIRST, 0, 0);
-            break;
-        default:
-            break;
+    // Verifica se a letra está presente no mapa
+    if (irCodes.find(letter) != irCodes.end()) {
+        // Se estiver, chama a função lsb_first com o código correspondente
+        lsb_first(irCodes[letter], 24);
+    } else {
+        // Caso contrário, não faz nada ou executa alguma ação padrão
     }
 }
 
