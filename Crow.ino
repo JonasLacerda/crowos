@@ -277,10 +277,8 @@ void sd(){
   titulo("SD");
   bateriaM5();
   hourTile();
-  //tela.setCursor(15, 50);
-  //tela.setTextScroll(true);
 
-    // SD Card Initialization
+  // SD Card Initialization
   SPI.begin(SD_SPI_SCK_PIN, SD_SPI_MISO_PIN, SD_SPI_MOSI_PIN, SD_SPI_CS_PIN);
   if (!SD.begin(SD_SPI_CS_PIN, SPI, 25000000)) {
     // Print a message if the SD card initialization
@@ -545,6 +543,18 @@ void loop() {
             menuConfig();
             tela.setBrightness(brilho[b]);
             break;
+        }
+      }
+
+      if (M5Cardputer.Keyboard.isKeyPressed('f')) {
+        if(indexTela == 4){
+          tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
+          titulo("SD");
+          bateriaM5();
+          hourTile();
+          // Formate o cartão SD
+          tela.drawString("nao desenvolvi ainda", 15, 35);
+
         }
       }
     }
