@@ -8,17 +8,26 @@ tela é de 240px * 135px ST7789
 #include <IRremote.hpp>
 #include <M5GFX.h>
 
+#include <SPI.h>
+#include <SD.h>
+
 #include "bateria.h"
 #include "tempo.h"
 
 #include "USB.h"
 #include "USBHIDKeyboard.h"
+
 USBHIDKeyboard Keyboard;
 
 #define tela M5Cardputer.Display
 
 #define DISABLE_CODE_FOR_RECEIVER
 #define IR_TX_PIN 44
+
+#define SD_SPI_SCK_PIN  40
+#define SD_SPI_MISO_PIN 39
+#define SD_SPI_MOSI_PIN 14
+#define SD_SPI_CS_PIN   12
 
 M5Canvas dataConfig(&M5Cardputer.Display);
 
@@ -46,7 +55,7 @@ unsigned long tempoUltimaAtualizacao = 0;
 
 String texto;
 
-//indexTela = [menuStart(), menuConfig(), appTeclado(), appIR()]
+//indexTela = [menuStart(), menuConfig(), appTeclado(), appIR(), sd()]
 int indexTela = 0;
 
 int frequencia = 38;
@@ -131,7 +140,7 @@ void menuStart() {
   hourTile();
   tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     int yPosition = 30 + i * 20;
 
     if (i == menuSelecionado) {
@@ -155,6 +164,9 @@ void menuStart() {
         break;
       case 3:
         tela.println("Configuracao");
+        break;
+      case 4:
+        tela.println("SD Info");
         break;
     }
   }
@@ -260,6 +272,57 @@ void appIR() {
   }
 }
 
+void sd(){
+  tela.fillRect(0, 30, tela.width(), 110, TFT_DARKCYAN);
+  titulo("SD");
+  bateriaM5();
+  hourTile();
+  //tela.setCursor(15, 50);
+  //tela.setTextScroll(true);
+
+    // SD Card Initialization
+  SPI.begin(SD_SPI_SCK_PIN, SD_SPI_MISO_PIN, SD_SPI_MOSI_PIN, SD_SPI_CS_PIN);
+  if (!SD.begin(SD_SPI_CS_PIN, SPI, 25000000)) {
+    // Print a message if the SD card initialization
+    // fails orif the SD card does not exist.
+    Serial.println("Card failed, or not present");
+    tela.drawString("Nao esta presente ou cartao falhou", 15, 35);
+    while (1)
+      ;
+  }
+
+  uint8_t cardType = SD.cardType();
+
+  if (cardType == CARD_NONE) {
+    Serial.println("No SD card attached");
+    tela.drawString("sem sd card", 15, 35);
+    return;
+  }
+
+  Serial.print("SD Card Type: ");
+  if (cardType == CARD_MMC) {
+    Serial.println("MMC");
+    tela.drawString("MMC", 15, 35);
+  } else if (cardType == CARD_SD) {
+    Serial.println("SDSC");
+    tela.drawString("SDSC", 15, 35);
+  } else if (cardType == CARD_SDHC) {
+    Serial.println("SDHC");
+    tela.drawString("SDHC", 15, 35);
+  } else {
+    Serial.println("UNKNOWN");
+    tela.drawString("UNKNOWN", 15, 35);
+  }
+
+  uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+  tela.drawString("SD Card:", 15, 60);
+  tela.drawString(String(cardSize) + " MB", 100, 60);
+  tela.drawString(String(cardSize) + " MB", 100, 60);
+  tela.drawString("Total: " + String(SD.totalBytes() / (1024 * 1024)) + "MB", 15, 75);
+  tela.drawString("Usado: " + String(SD.usedBytes() / (1024 * 1024)) + "MB", 15, 90);
+  tela.drawString("Para formatar digite f", 15, 120);
+}
+
 
 void lsb_first(unsigned long cod, int tt){
   IrSender.sendPulseDistanceWidth(frequencia, pulso_marcacao, intervalo_marcacao, pulso_espaco, intervalo_espaco, pulso_inicio, intervalo_inicio, cod, tt, PROTOCOL_IS_LSB_FIRST, 0, 0);
@@ -278,6 +341,7 @@ void sendIRSignal(char letter) {
 void setup() {
   auto cfg = M5.config();
   M5Cardputer.begin(cfg, true);
+
   Serial.begin(115200);
 
   tela.setBrightness(50);
@@ -327,6 +391,13 @@ void loop() {
           indexTela = 1;
         }
         break;
+      case 4 :
+        if(indexTela != 4){
+          sd();
+          indexTela = 4;
+        }
+        break;
+
     }
   }
 
@@ -405,7 +476,7 @@ void loop() {
         switch (indexTela) {
           case 0:
             menuSelecionado++;
-            if (menuSelecionado >= 4) {
+            if (menuSelecionado >= 5) {
               menuSelecionado = 0;
             }
             menuStart();
@@ -427,7 +498,7 @@ void loop() {
           case 0:
             menuSelecionado--;
             if (menuSelecionado < 0) {
-              menuSelecionado = 3;
+              menuSelecionado = 4;
             }
             menuStart();
             break;
@@ -515,21 +586,9 @@ void loop() {
       }
 
     }
+
+
     
     delay(30);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
