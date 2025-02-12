@@ -9,7 +9,7 @@ Os apps que estou desenvolvendo (tentando fazer funcionar):
 - IR
   - [x] Em desenvolvimento. Minha TV é TCL e não encontrei os comandos dela. Isso me implica em montar um Arduino para capturar os inputs do controle IR e depois programar para o Carputer.
   - [ ] custoimizar os controles.
-  - [ ] Criar um documento para configuração de cada controle.
+  - [ ] Criar um documento para configuração de cada controle no cartao sd.
 - Tempo
   - [x] Parcialmente feito. Criei as funções para definir o tempo correto, e o tempo corre bem favorável. Existe uma diferença de segundos que será corrigida com wifi no futuro.
   - [ ] Quero adicionar no app Tempo a técnica Pomodoro.
